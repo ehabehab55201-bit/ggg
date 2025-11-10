@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>مسح الكارت الصحي - QR Scanner</title>
+
+<!-- خط عربي -->
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+
+<!-- مكتبة مسح QR -->
+<script src="https://unpkg.com/html5-qrcode"></script>
+
+<style>
+body{
+  font-family:'Cairo',sans-serif;
+  background:linear-gradient(180deg,#e7f3ff,#f8fbff);
+  margin:0;
+  padding:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  min-height:100vh;
+}
+header{
+  background:#0077cc;
+  color:white;
+  width:100%;
+  padding:14px 0;
+  text-align:center;
+  font-weight:700;
+  font-size:20px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.15);
+}
+#reader{
+  width:300px;
+  max-width:90%;
+  margin-top:40px;
+  border-radius:12px;
+  overflow:hidden;
+  box-shadow:0 6px 20px rgba(0,0,0,0.15);
+}
+#result-box{
+  margin-top:24px;
+  background:white;
+  border:2px solid #0077cc;
+  border-radius:10px;
+  padding:16px 20px;
+  width:300px;
+  max-width:90%;
+  text-align:center;
+  font-size:16px;
+  color:#003f73;
+  display:none;
+}
+button{
+  margin-top:20px;
+  padding:10px 20px;
+  border:none;
+  background:#0077cc;
+  color:white;
+  font-weight:600;
+  border-radius:8px;
+  cursor:pointer;
+  box-shadow:0 3px 6px rgba(0,0,0,0.2);
+}
+button:hover{background:#005fa3;}
+</style>
+</head>
+
+<body>
+<header>📷 مسح الكارت الصحي الذكي</header>
+
+<div id="reader"></div>
+<div id="result-box"></div>
+
+<button id="startBtn">بدء المسح</button>
+
+<script>
+let scannerStarted = false;
+const html5QrCode = new Html5Qrcode("reader");
+
+document.getElementById("startBtn").addEventListener("click", () => {
+  if (!scannerStarted) {
+    startScanner();
+  }
+});
+
+function startScanner(){
+  scannerStarted = true;
+  document.getElementById("startBtn").style.display = "none";
+
+  Html5Qrcode.getCameras().then(devices => {
+    if(devices && devices.length){
+      const cameraId = devices[0].id;
+      html5QrCode.start(
+        cameraId,
+        {
+          fps: 10,
+          qrbox: { width: 250, height: 250 }
+        },
+        qrCodeMessage => {
+          showResult(qrCodeMessage);
+          html5QrCode.stop();
+        },
+        errorMessage => {}
+      );
+    } else {
+      alert("لم يتم العثور على كاميرا في هذا الجهاز.");
+    }
+  }).catch(err => {
+    alert("حدث خطأ في الوصول للكاميرا: " + err);
+  });
+}
+
+function showResult(text){
+  const box = document.getElementById("result-box");
+  box.style.display = "block";
+  box.innerHTML = `
+    ✅ تم قراءة الكود بنجاح<br><br>
+    <strong>البيانات:</strong><br>${text}<br><br>
+    <a href="${text}" target="_blank">فتح السجل الطبي</a>
+  `;
+}
+</script>
+
+</body>
+</html>
